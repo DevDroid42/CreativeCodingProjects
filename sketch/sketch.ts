@@ -1,4 +1,6 @@
-let mic, fft;
+let mic: p5.AudioIn;
+let fft: p5.FFT;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   noFill();
@@ -12,7 +14,7 @@ function draw() {
   background(200);
 
   let spectrum = fft.analyze();
-
+  
   beginShape();
   for (let i = 0; i < spectrum.length; i++) {
     vertex(i, map(spectrum[i], 0, 255, height, 0));
