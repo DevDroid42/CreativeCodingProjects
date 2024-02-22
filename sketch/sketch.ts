@@ -11,13 +11,12 @@ function setup() {
 }
 
 function draw() {
-  background(200);
+  background(200, 5 * deltaTime);
 
   let spectrum = fft.analyze();
-  
   beginShape();
   for (let i = 0; i < spectrum.length; i++) {
-    vertex(i, map(spectrum[i], 0, 255, height, 0));
+    vertex(i / spectrum.length * windowWidth, map(spectrum[i], 0, 255, height, 0));
   }
   endShape();
 }
