@@ -37,9 +37,12 @@ function tickCircles() {
 function circleCollision() {
     balls.forEach(ball => {
         vertexData.forEach((vertex) => {
-            if (ball.position.dist(vertex) < ball.diameter / 2) {
+            if (Math.abs(ball.position.x - vertex.x) < (ball.diameter / 4) && ball.position.y > vertex.y + 5) {
+                ball.position.y = vertex.y + 5;
+            }
+            else if (ball.position.dist(vertex) < ball.diameter / 2) {
                 let delta = p5.Vector.sub(ball.position, vertex);
-                ball.speed.add(delta);
+                ball.speed.add(delta.mult(10));
             }
         });
     });
@@ -59,6 +62,7 @@ const spectrumSize = 1024;
 const vertexData = new Array(spectrumSize);
 function draw() {
     dTime = deltaTime / 1000;
+    fft.smooth(0.9);
     background(255);
     tickCircles();
     let spectrum = fft.analyze(spectrumSize);
@@ -66,16 +70,14 @@ function draw() {
         vertexData[i] = createVector((i / spectrum.length) * windowWidth, map(spectrum[i] * 2, 0, 255, height, 0));
     }
     push();
-    for (let i = 0; i < spectrum.length; i += 4) {
-        beginShape();
+    for (let i = 0; i < spectrum.length; i += 2) {
+        beginShape(QUADS);
         stroke(i / spectrum.length * 128, 255, 255);
         fill(i / spectrum.length * 128, 255, 255);
         vertex(vertexData[i].x, windowHeight);
         vertex(vertexData[i].x, vertexData[i].y);
         vertex(vertexData[i + 1].x, vertexData[i + 1].y);
-        vertex(vertexData[i + 2].x, vertexData[i + 2].y);
-        vertex(vertexData[i + 3].x, vertexData[i + 3].y);
-        vertex(vertexData[i + 3].x, windowHeight);
+        vertex(vertexData[i + 1].x, windowHeight);
         endShape();
     }
     pop();
