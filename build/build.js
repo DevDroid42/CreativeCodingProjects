@@ -29,15 +29,15 @@ function tickCircles() {
             ball.speed.y *= -0.5;
         }
         ball.position.add(p5.Vector.mult(ball.speed, dTime));
-        ball.speed.y -= 0.8 * dTime;
+        ball.speed.y += 80 * dTime;
         circle(ball.position.x, ball.position.y, ball.diameter);
     });
     pop();
 }
 function circleCollision() {
-    balls.forEach(ball => {
+    balls.forEach((ball) => {
         vertexData.forEach((vertex) => {
-            if (Math.abs(ball.position.x - vertex.x) < (ball.diameter / 4) && ball.position.y > vertex.y + 5) {
+            if (Math.abs(ball.position.x - vertex.x) < ball.diameter / 4 && ball.position.y > vertex.y + 5) {
                 ball.position.y = vertex.y + 5;
             }
             else if (ball.position.dist(vertex) < ball.diameter / 2) {
@@ -72,8 +72,8 @@ function draw() {
     push();
     for (let i = 0; i < spectrum.length; i += 2) {
         beginShape(QUADS);
-        stroke(i / spectrum.length * 128, 255, 255);
-        fill(i / spectrum.length * 128, 255, 255);
+        stroke((i / spectrum.length) * 128, 255, 255);
+        fill((i / spectrum.length) * 128, 255, 255);
         vertex(vertexData[i].x, windowHeight);
         vertex(vertexData[i].x, vertexData[i].y);
         vertex(vertexData[i + 1].x, vertexData[i + 1].y);
