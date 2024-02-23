@@ -62,13 +62,24 @@ function draw() {
     background(255);
     tickCircles();
     let spectrum = fft.analyze(spectrumSize);
-    beginShape();
     for (let i = 0; i < spectrum.length; i++) {
         vertexData[i] = createVector((i / spectrum.length) * windowWidth, map(spectrum[i] * 2, 0, 255, height, 0));
-        vertex(vertexData[i].x, vertexData[i].y);
     }
+    push();
+    for (let i = 0; i < spectrum.length; i += 4) {
+        beginShape();
+        stroke(i / spectrum.length * 128, 255, 255);
+        fill(i / spectrum.length * 128, 255, 255);
+        vertex(vertexData[i].x, windowHeight);
+        vertex(vertexData[i].x, vertexData[i].y);
+        vertex(vertexData[i + 1].x, vertexData[i + 1].y);
+        vertex(vertexData[i + 2].x, vertexData[i + 2].y);
+        vertex(vertexData[i + 3].x, vertexData[i + 3].y);
+        vertex(vertexData[i + 3].x, windowHeight);
+        endShape();
+    }
+    pop();
     circleCollision();
-    endShape();
 }
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
