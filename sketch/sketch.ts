@@ -29,6 +29,7 @@ function tickCircles() {
   push();
   balls.forEach((ball) => {
     fill(ball.color);
+    stroke(ball.color);
     if (ball.position.x > windowWidth - ball.diameter / 2 || ball.position.x < ball.diameter / 2) {
       ball.position.x = clamp(ball.position.x, ball.diameter / 2, windowWidth - ball.diameter / 2);
       ball.speed.x *= -0.3;
@@ -76,7 +77,7 @@ function draw() {
   hueOffset += 1 * dTime;
   dTime = deltaTime / 1000;
   fft.smooth(0.9);
-  background(0);
+  background(0, 0.1);
   tickCircles();
   let spectrum = fft.analyze(spectrumSize);
   for (let i = 0; i < spectrum.length; i++) {
