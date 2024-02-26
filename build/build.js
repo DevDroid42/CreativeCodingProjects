@@ -75,8 +75,8 @@ function draw() {
     push();
     for (let i = 0; i < spectrum.length - 1; i++) {
         beginShape(QUADS);
-        stroke((i / spectrum.length) * 128 + hueOffset * 20, 255, 255);
-        fill((i / spectrum.length) * 128 + hueOffset * 20, 255, 255);
+        stroke((i / spectrum.length) * 128 + hueOffset * 20 % 255, 255, 255);
+        fill((i / spectrum.length) * 128 + hueOffset * 20 % 255, 255, 255);
         vertex(vertexData[i].x, windowHeight);
         vertex(vertexData[i].x, vertexData[i].y);
         vertex(vertexData[i + 1].x, vertexData[i + 1].y);
