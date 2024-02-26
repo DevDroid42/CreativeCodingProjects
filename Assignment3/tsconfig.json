@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "noImplicitAny": false,
+    "outDir": "./build",
+    "preserveConstEnums": true,
+    "removeComments": true,
+    "rootDir": "./sketch/",
+    "sourceMap": true,
+    "target": "es6",
+    "moduleResolution": "node"
+  }
+}
