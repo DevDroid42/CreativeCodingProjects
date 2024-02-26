@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "none",
     "noImplicitAny": false,
-    "outFile": "./build/build.js",
+    "outDir": "./build",
     "preserveConstEnums": true,
     "removeComments": true,
     "rootDir": "./sketch/",
