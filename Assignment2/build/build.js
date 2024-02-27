@@ -2,6 +2,13 @@ let balls;
 let dTime = 0;
 let hueOffset = 0;
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+class Color {
+    constructor(H, S, V) {
+        this.H = H;
+        this.S = S;
+        this.V = V;
+    }
+}
 class Ball {
     constructor(position, speed, diameter, color) {
         this.position = position;
@@ -14,19 +21,20 @@ function setupBalls(circleCount) {
     balls = new Array(circleCount);
     for (let i = 0; i < balls.length; i++) {
         colorMode("hsb");
-        balls[i] = new Ball(createVector(Math.round(Math.random() * windowWidth), Math.round(Math.random() * windowHeight)), createVector(Math.round(Math.random() * windowWidth) / 7, Math.round(Math.random() * windowHeight) / 7), Math.round((Math.random() * windowHeight) / 10 + 20), color((i / balls.length) * 128, 255, 255));
+        balls[i] = new Ball(createVector(Math.round(Math.random() * windowWidth), Math.round(Math.random() * windowHeight)), createVector(Math.round(Math.random() * windowWidth) / 7, Math.round(Math.random() * windowHeight) / 7), Math.round((Math.random() * windowHeight) / 10 + 20), new Color((i / balls.length) * 128, 255, 255));
     }
 }
 function tickCircles() {
     push();
+    let hue = (hueOffset + 128) % 255;
     balls.forEach((ball) => {
-        fill(ball.color);
-        stroke(ball.color);
+        stroke(ball.color.H + hue, ball.color.S, ball.color.V);
+        fill(ball.color.H + hue, ball.color.S, ball.color.V);
         if (ball.position.x > windowWidth - ball.diameter / 2 || ball.position.x < ball.diameter / 2) {
             ball.position.x = clamp(ball.position.x, ball.diameter / 2, windowWidth - ball.diameter / 2);
             ball.speed.x *= -0.3;
         }
-        if (ball.position.y > windowHeight - ball.diameter / 2 || ball.position.y - ball.diameter / 2 < 0) {
+        if (ball.position.y > (windowHeight - 5) - ball.diameter / 2 || ball.position.y - ball.diameter / 2 < 0) {
             ball.position.y = clamp(ball.position.y, ball.diameter / 2, windowHeight - ball.diameter / 2);
             ball.speed.y *= -0.3;
         }
@@ -63,20 +71,22 @@ function setup() {
 const spectrumSize = 1024;
 const vertexData = new Array(spectrumSize);
 function draw() {
-    hueOffset += 1 * dTime;
+    let energy = Math.pow((fft.getEnergy('bass')) / 255.0, 4) * 10 + 0.1;
+    hueOffset += 1 * dTime * energy;
     dTime = deltaTime / 1000;
     fft.smooth(0.9);
     background(0, 0.1);
     tickCircles();
     let spectrum = fft.analyze(spectrumSize);
     for (let i = 0; i < spectrum.length; i++) {
-        vertexData[i] = createVector((i / spectrum.length) * windowWidth, map(spectrum[i] * 2, 0, 255, height, 0));
+        vertexData[i] = createVector((i / spectrum.length) * windowWidth, map(spectrum[i] * ((Math.log(i + 30) / 5)), 0, 255, height, 0));
     }
     push();
     for (let i = 0; i < spectrum.length - 1; i++) {
         beginShape(QUADS);
-        stroke((i / spectrum.length) * 128 + hueOffset * 20 % 255, 255, 255);
-        fill((i / spectrum.length) * 128 + hueOffset * 20 % 255, 255, 255);
+        let hue = ((i / spectrum.length) * 128 + hueOffset) % 255;
+        stroke(hue, 255, 255);
+        fill(hue, 255, 255);
         vertex(vertexData[i].x, windowHeight);
         vertex(vertexData[i].x, vertexData[i].y);
         vertex(vertexData[i + 1].x, vertexData[i + 1].y);
