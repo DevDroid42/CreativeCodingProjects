@@ -28,6 +28,7 @@ function tickCircles() {
     push();
     let hue = (hueOffset + 128) % 255;
     balls.forEach((ball) => {
+        ball.color.S += clamp(128 * dTime, 0, 255);
         stroke(ball.color.H + hue, ball.color.S, ball.color.V);
         fill(ball.color.H + hue, ball.color.S, ball.color.V);
         if (ball.position.x > windowWidth - ball.diameter / 2 || ball.position.x < ball.diameter / 2) {
@@ -57,8 +58,15 @@ function circleCollision() {
         });
     });
 }
+function peak() {
+    console.log("peaked");
+    balls.forEach(ball => {
+        ball.color.S = 0;
+    });
+}
 let mic;
 let fft;
+let peakDetector;
 function setup() {
     createCanvas(windowWidth, windowHeight);
     setupBalls(10);
@@ -67,14 +75,17 @@ function setup() {
     mic.start();
     fft = new p5.FFT();
     fft.setInput(mic);
+    peakDetector = new p5.PeakDetect(20, 400, 0.35, frameRate() / 8);
+    peakDetector.onPeak(peak);
 }
 const spectrumSize = 1024;
 const vertexData = new Array(spectrumSize);
 function draw() {
-    let energy = Math.pow((fft.getEnergy('mid')) / 255.0, 10) * 20000 + 0.1;
+    let energy = Math.pow((fft.getEnergy('mid')) / 255.0, 6) * 3000 + 0.1;
     hueOffset += 1 * dTime * energy;
     dTime = deltaTime / 1000;
     fft.smooth(0.9);
+    peakDetector.update(fft);
     background(0, 0.1);
     tickCircles();
     let spectrum = fft.analyze(spectrumSize);
@@ -85,8 +96,9 @@ function draw() {
     for (let i = 0; i < spectrum.length - 1; i++) {
         beginShape(QUADS);
         let hue = ((i / spectrum.length) * 128 + hueOffset) % 255;
-        stroke(hue, 255, 255);
-        fill(hue, 255, 255);
+        let value = clamp((1 - vertexData[i].y / windowHeight) * 255, 0, 255);
+        stroke(hue, 255, value);
+        fill(hue, 255, value);
         vertex(vertexData[i].x, windowHeight);
         vertex(vertexData[i].x, vertexData[i].y);
         vertex(vertexData[i + 1].x, vertexData[i + 1].y);
