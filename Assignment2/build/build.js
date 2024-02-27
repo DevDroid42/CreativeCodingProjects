@@ -71,7 +71,7 @@ function setup() {
 const spectrumSize = 1024;
 const vertexData = new Array(spectrumSize);
 function draw() {
-    let energy = Math.pow((fft.getEnergy('bass')) / 255.0, 4) * 10 + 0.1;
+    let energy = Math.pow((fft.getEnergy('mid')) / 255.0, 10) * 20000 + 0.1;
     hueOffset += 1 * dTime * energy;
     dTime = deltaTime / 1000;
     fft.smooth(0.9);
