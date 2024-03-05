@@ -75,13 +75,13 @@ function setup() {
     mic.start();
     fft = new p5.FFT();
     fft.setInput(mic);
-    peakDetector = new p5.PeakDetect(20, 400, 0.35, frameRate() / 8);
+    peakDetector = new p5.PeakDetect(1000, 20000, 0.35, frameRate() / 8);
     peakDetector.onPeak(peak);
 }
 const spectrumSize = 1024;
 const vertexData = new Array(spectrumSize);
 function draw() {
-    let energy = Math.pow((fft.getEnergy('mid')) / 255.0, 6) * 3000 + 0.1;
+    let energy = Math.pow((fft.getEnergy(5, 15000)) / 255.0, 6) * 3000 + 0.1;
     hueOffset += 1 * dTime * energy;
     dTime = deltaTime / 1000;
     fft.smooth(0.9);
