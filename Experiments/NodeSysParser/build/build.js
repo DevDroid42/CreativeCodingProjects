@@ -1,8 +1,18 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class VideoPixelReader {
     constructor(videoUrl) {
         this.videoElement = document.createElement("video");
         this.videoElement.src = videoUrl;
         this.videoElement.crossOrigin = "anonymous";
+        this.videoElement.preload = "auto";
         this.canvas = document.createElement("canvas");
         this.context = this.canvas.getContext("2d");
         document.body.appendChild(this.canvas);
@@ -14,28 +24,41 @@ class VideoPixelReader {
         });
     }
     getPixel(x, y, timeInSeconds) {
-        if (!this.videoDataLoaded) {
-            console.error("Video data not loaded. Call after video has loaded.");
-            return null;
-        }
-        this.videoElement.currentTime = timeInSeconds;
-        this.context.drawImage(this.videoElement, 0, 0);
-        const imageData = this.context.getImageData(x, y, 1, 1);
-        return imageData.data;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.videoDataLoaded) {
+                console.error("Video data not loaded. Call after video has loaded.");
+                return null;
+            }
+            this.videoElement.currentTime = timeInSeconds;
+            yield new Promise((resolve) => {
+                this.videoElement.addEventListener("seeked", resolve, { once: true });
+            });
+            this.context.drawImage(this.videoElement, 0, 0);
+            const imageData = this.context.getImageData(x, y, 1, 1);
+            return imageData.data;
+        });
     }
 }
-const videoUrl = "./assets/testEncoded.mp4";
-const reader = new VideoPixelReader(videoUrl);
-setTimeout(() => {
-    for (let time = 0; time < 4; time += 0.1) {
-        const pixelData = reader.getPixel(128, 128, time);
-        if (pixelData) {
-            const [r, g, b, a] = pixelData;
-            console.log(`Pixel at (128, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
-        }
-        else {
-            console.log("Pixel data not available.");
+setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+    const videoUrl = "./assets/testEncoded.webm";
+    const reader = new VideoPixelReader(videoUrl);
+    let seeks = 0;
+    let avgSeekTime = 0;
+    for (let i = 0; i < 4; i++) {
+        for (let time = 0; time < 4; time += 0.1) {
+            seeks += 1;
+            let t0 = performance.now();
+            const pixelData = yield reader.getPixel(128, 128, time);
+            if (pixelData) {
+                const [r, g, b, a] = pixelData;
+                console.log(`Pixel at (128, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
+            }
+            else {
+                console.log("Pixel data not available.");
+            }
+            avgSeekTime += performance.now() - t0;
         }
     }
-}, 1000);
+    console.log(`avg seek time: ${avgSeekTime / seeks}`);
+}), 1000);
 //# sourceMappingURL=build.js.map
