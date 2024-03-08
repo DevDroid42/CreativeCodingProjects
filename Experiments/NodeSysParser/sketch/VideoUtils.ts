@@ -6,8 +6,9 @@ class ColorTable {
   public constructor(public colors: Color[], public time: number) {}
 
   public getColor(position: number): Color {
-    position = position - round(position);
-    return this.colors[round(position * this.colors.length)];
+    position = position - Math.floor(position);
+    const idx = Math.min(this.colors.length - 1, Math.round(position * this.colors.length));
+    return this.colors[idx];
   }
 }
 
@@ -40,7 +41,7 @@ class TableVideo {
 
 class VideoPixelReader {
   private frameRate: number;
-  private resolution: number;
+  public resolution: number;
   private cachedVideo: TableVideo;
   private videoElement: HTMLVideoElement;
   private canvas: HTMLCanvasElement;
@@ -77,15 +78,15 @@ class VideoPixelReader {
     let frames: ColorTable[] = [];
     for (let time = 0; time < this.videoElement.duration; time += delta) {
       let colors: Color[] = []
-      const pixelData = await this.decodeGetPixel(this.resolution, time);
-      for (let x = 0; x < this.resolution; x+=4) {
+      const pixelData = await this.decodeGetPixels(this.resolution, time);
+      for (let x = 0; x < this.resolution * 4; x+=4) {
         if (pixelData) {
           const r = pixelData[x];
           const g = pixelData[x+1];
           const b = pixelData[x+2];
           const a = pixelData[x+3];
-          console.log(`Pixel at (${x}, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
-          colors.push(new Color(pixelData[0], pixelData[1], pixelData[2]));
+          //console.log(`Pixel at (${x}, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
+          colors.push(new Color(r,g,b));
         } else {
           console.log("Pixel data not available.");
         }
@@ -100,7 +101,7 @@ class VideoPixelReader {
   }
 
   // Asynchronous method to get pixel data
-  private async decodeGetPixel(
+  private async decodeGetPixels(
     width: number,
     timeInSeconds: number
   ): Promise<Uint8ClampedArray | null> {
@@ -121,7 +122,7 @@ class VideoPixelReader {
     this.context.drawImage(this.videoElement, 0, 0);
 
     // Get pixel data at the specified coordinates
-    const imageData = this.context.getImageData(0 - width / 2, this.videoElement.height/2, width, 1);
+    const imageData = this.context.getImageData(0, this.videoElement.height/2, width, 1);
     return imageData.data;
   }
 }

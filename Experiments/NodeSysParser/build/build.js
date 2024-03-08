@@ -20,8 +20,9 @@ class ColorTable {
         this.time = time;
     }
     getColor(position) {
-        position = position - round(position);
-        return this.colors[round(position * this.colors.length)];
+        position = position - Math.floor(position);
+        const idx = Math.min(this.colors.length - 1, Math.round(position * this.colors.length));
+        return this.colors[idx];
     }
 }
 class TableVideo {
@@ -81,15 +82,14 @@ class VideoPixelReader {
             let frames = [];
             for (let time = 0; time < this.videoElement.duration; time += delta) {
                 let colors = [];
-                const pixelData = yield this.decodeGetPixel(this.resolution, time);
-                for (let x = 0; x < this.resolution; x += 4) {
+                const pixelData = yield this.decodeGetPixels(this.resolution, time);
+                for (let x = 0; x < this.resolution * 4; x += 4) {
                     if (pixelData) {
                         const r = pixelData[x];
                         const g = pixelData[x + 1];
                         const b = pixelData[x + 2];
                         const a = pixelData[x + 3];
-                        console.log(`Pixel at (${x}, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
-                        colors.push(new Color(pixelData[0], pixelData[1], pixelData[2]));
+                        colors.push(new Color(r, g, b));
                     }
                     else {
                         console.log("Pixel data not available.");
@@ -103,7 +103,7 @@ class VideoPixelReader {
     getPixel(x, time) {
         return this.cachedVideo.getFrame(time).getColor(x);
     }
-    decodeGetPixel(width, timeInSeconds) {
+    decodeGetPixels(width, timeInSeconds) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.videoDataLoaded) {
                 console.error("Video data not loaded. Call after video has loaded.");
@@ -114,15 +114,17 @@ class VideoPixelReader {
                 this.videoElement.addEventListener("seeked", resolve, { once: true });
             });
             this.context.drawImage(this.videoElement, 0, 0);
-            const imageData = this.context.getImageData(0 - width / 2, this.videoElement.height / 2, width, 1);
+            const imageData = this.context.getImageData(0, this.videoElement.height / 2, width, 1);
             return imageData.data;
         });
     }
 }
+let reader;
+let setupDone = false;
 function setup() {
     return __awaiter(this, void 0, void 0, function* () {
         const videoUrl = "./assets/testEncoded.mp4";
-        const reader = new VideoPixelReader(videoUrl, 24, 256);
+        reader = new VideoPixelReader(videoUrl, 24, 256);
         yield reader.populateData();
         let seeks = 0;
         let avgSeekTime = 0;
@@ -130,12 +132,29 @@ function setup() {
             for (let time = 0; time < 4; time += 0.1) {
                 seeks += 1;
                 let t0 = performance.now();
-                const c = reader.getPixel(128, time);
-                console.log(`Pixel at (128, 128) at ${time} seconds: R=${c.r}, G=${c.g}, B=${c.b}`);
+                const c = reader.getPixel(0.5, time);
                 avgSeekTime += performance.now() - t0;
             }
         }
         console.log(`avg seek time: ${avgSeekTime / seeks}`);
+        createCanvas(720, 400);
+        stroke(255);
+        frameRate(30);
+        setupDone = true;
     });
+}
+let time = 0;
+function draw() {
+    if (!setupDone)
+        return;
+    background(0);
+    stroke(0, 0);
+    time += deltaTime / 1000;
+    for (let i = 0; i < reader.resolution; i++) {
+        const pos = i / reader.resolution;
+        const col = reader.getPixel(pos, time % 4);
+        fill(col.r, col.g, col.b);
+        square((i / reader.resolution) * width, height / 2, 3);
+    }
 }
 //# sourceMappingURL=build.js.map
