@@ -1,3 +1,43 @@
+class Color {
+  public constructor(public r: number, public g: number, public b: number) {}
+}
+
+class ColorTable {
+  public constructor(public colors: Color[], public time: number) {}
+
+  public getColor(position: number): Color {
+    position = position - round(position);
+    return this.colors[round(position * this.colors.length)];
+  }
+}
+
+class TableVideo {
+  public constructor(public frames: ColorTable[]) {
+    this.frames.sort((n1, n2) => n1.time - n2.time);
+  }
+
+  private binarySearch(frames: ColorTable[], target: number): ColorTable {
+    let left: number = 0;
+    let right: number = frames.length - 1;
+
+    if(frames.length === 1) return frames[0];
+    if(frames.length === 2) return frames[Math.round(target)];
+
+    while (left <= right) {
+      const mid: number = Math.floor((left + right) / 2);
+      if (mid === 0) return frames[mid];
+      if (mid === frames.length - 1) return frames[mid];
+      if (frames[mid - 1].time <= target && frames[mid + 1].time >= target) return frames[mid];
+      if (target < frames[mid].time) right = mid - 1;
+      else left = mid + 1;
+    }
+  }
+
+  public getFrame(time: number) {
+    return this.binarySearch(this.frames, time);
+  }
+}
+
 class VideoPixelReader {
   private videoElement: HTMLVideoElement;
   private canvas: HTMLCanvasElement;
@@ -23,7 +63,7 @@ class VideoPixelReader {
   }
 
   // Asynchronous method to get pixel data
-  async getPixel(x: number, y: number, timeInSeconds: number): Promise<Uint8ClampedArray | null> {
+  async decodeGetPixel(x: number, y: number, timeInSeconds: number): Promise<Uint8ClampedArray | null> {
     if (!this.videoDataLoaded) {
       console.error("Video data not loaded. Call after video has loaded.");
       return null;

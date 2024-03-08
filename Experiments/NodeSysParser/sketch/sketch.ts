@@ -1,3 +1,5 @@
+
+
 setTimeout(async () => {
   // Example usage:
   const videoUrl = "./assets/testEncoded.webm";
@@ -10,7 +12,7 @@ setTimeout(async () => {
     for (let time = 0; time < 4; time += 0.1) {
       seeks += 1;
       let t0 = performance.now();
-      const pixelData = await reader.getPixel(128, 128, time);
+      const pixelData = await reader.decodeGetPixel(128, 128, time);
       if (pixelData) {
         const [r, g, b, a] = pixelData;
         console.log(`Pixel at (128, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
