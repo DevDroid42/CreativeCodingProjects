@@ -1,16 +1,9 @@
 let reader: VideoPixelReader;
 let setupDone = false;
 
-async function setup() {
-  // Example usage:
-  const videoUrl = "./assets/testEncoded.mp4";
-  reader = new VideoPixelReader(videoUrl, 24, 256);
-  await reader.populateData();
-  
+function benchmark(reader: VideoPixelReader){
   let seeks = 0;
   let avgSeekTime = 0;
-
-  
   // Get pixel at coordinates (128, 128) and time 5 seconds into the video
   for (let i = 0; i < 4; i++) {
     for (let time = 0; time < 4; time += 0.1) {
@@ -22,7 +15,13 @@ async function setup() {
     }
   }
   console.log(`avg seek time: ${avgSeekTime / seeks}`);
-  
+}
+
+async function setup() {
+  // Example usage:
+  const videoUrl = "./assets/testEncoded.webm";
+  reader = new VideoPixelReader(videoUrl, 24, 256);
+  await reader.populateData();
   createCanvas(720, 400);
   stroke(255); // Set line drawing color to white
   frameRate(30);
@@ -31,7 +30,10 @@ async function setup() {
 
 let time = 0;
 function draw(){
-  if(!setupDone) return;
+  if(!setupDone) {
+    text("Loading", width / 2, height / 2);
+    return;
+  }
   background(0);
   stroke(0,0);
   time += deltaTime / 1000;
@@ -39,6 +41,6 @@ function draw(){
     const pos = i / reader.resolution;
     const col = reader.getPixel(pos, time % 4);
     fill(col.r, col.g, col.b);
-    square((i / reader.resolution) * width, height / 2, 3);  
+    square((i / reader.resolution) * width, height / 2, 2);  
   }
 }

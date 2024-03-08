@@ -121,22 +121,24 @@ class VideoPixelReader {
 }
 let reader;
 let setupDone = false;
+function benchmark(reader) {
+    let seeks = 0;
+    let avgSeekTime = 0;
+    for (let i = 0; i < 4; i++) {
+        for (let time = 0; time < 4; time += 0.1) {
+            seeks += 1;
+            let t0 = performance.now();
+            const c = reader.getPixel(0.5, time);
+            avgSeekTime += performance.now() - t0;
+        }
+    }
+    console.log(`avg seek time: ${avgSeekTime / seeks}`);
+}
 function setup() {
     return __awaiter(this, void 0, void 0, function* () {
-        const videoUrl = "./assets/testEncoded.mp4";
+        const videoUrl = "./assets/testEncoded.webm";
         reader = new VideoPixelReader(videoUrl, 24, 256);
         yield reader.populateData();
-        let seeks = 0;
-        let avgSeekTime = 0;
-        for (let i = 0; i < 4; i++) {
-            for (let time = 0; time < 4; time += 0.1) {
-                seeks += 1;
-                let t0 = performance.now();
-                const c = reader.getPixel(0.5, time);
-                avgSeekTime += performance.now() - t0;
-            }
-        }
-        console.log(`avg seek time: ${avgSeekTime / seeks}`);
         createCanvas(720, 400);
         stroke(255);
         frameRate(30);
@@ -145,8 +147,10 @@ function setup() {
 }
 let time = 0;
 function draw() {
-    if (!setupDone)
+    if (!setupDone) {
+        text("Loading", width / 2, height / 2);
         return;
+    }
     background(0);
     stroke(0, 0);
     time += deltaTime / 1000;
@@ -154,7 +158,7 @@ function draw() {
         const pos = i / reader.resolution;
         const col = reader.getPixel(pos, time % 4);
         fill(col.r, col.g, col.b);
-        square((i / reader.resolution) * width, height / 2, 3);
+        square((i / reader.resolution) * width, height / 2, 2);
     }
 }
 //# sourceMappingURL=build.js.map
