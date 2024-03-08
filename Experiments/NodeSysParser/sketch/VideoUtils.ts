@@ -20,8 +20,8 @@ class TableVideo {
     let left: number = 0;
     let right: number = frames.length - 1;
 
-    if(frames.length === 1) return frames[0];
-    if(frames.length === 2) return frames[Math.round(target)];
+    if (frames.length === 1) return frames[0];
+    if (frames.length === 2) return frames[Math.round(target)];
 
     while (left <= right) {
       const mid: number = Math.floor((left + right) / 2);
@@ -39,12 +39,17 @@ class TableVideo {
 }
 
 class VideoPixelReader {
+  private frameRate: number;
+  private resolution: number;
+  private cachedVideo: TableVideo;
   private videoElement: HTMLVideoElement;
   private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
   private videoDataLoaded: boolean;
 
-  constructor(videoUrl: string) {
+  constructor(videoUrl: string, frameRate: number, resolution: number) {
+    this.frameRate = frameRate;
+    this.resolution = resolution;
     this.videoElement = document.createElement("video");
     this.videoElement.src = videoUrl;
     this.videoElement.crossOrigin = "anonymous";
@@ -55,6 +60,7 @@ class VideoPixelReader {
     document.body.appendChild(this.canvas);
     this.videoDataLoaded = false;
 
+    //This needs to be awaited somehow. perhaps in populate data
     this.videoElement.addEventListener("loadeddata", () => {
       this.canvas.width = this.videoElement.videoWidth;
       this.canvas.height = this.videoElement.videoHeight;
@@ -62,8 +68,42 @@ class VideoPixelReader {
     });
   }
 
+  public async populateData() {
+    // Wait for the video frame to update
+    await new Promise((resolve) => {
+      this.videoElement.addEventListener("loadeddata", resolve, { once: true });
+    });
+    const delta = 1 / this.frameRate;
+    let frames: ColorTable[] = [];
+    for (let time = 0; time < this.videoElement.duration; time += delta) {
+      let colors: Color[] = []
+      const pixelData = await this.decodeGetPixel(this.resolution, time);
+      for (let x = 0; x < this.resolution; x+=4) {
+        if (pixelData) {
+          const r = pixelData[x];
+          const g = pixelData[x+1];
+          const b = pixelData[x+2];
+          const a = pixelData[x+3];
+          console.log(`Pixel at (${x}, 128) at ${time} seconds: R=${r}, G=${g}, B=${b}, A=${a}`);
+          colors.push(new Color(pixelData[0], pixelData[1], pixelData[2]));
+        } else {
+          console.log("Pixel data not available.");
+        }
+      }
+      frames.push(new ColorTable(colors, time));
+    }
+    this.cachedVideo = new TableVideo(frames);
+  }
+
+  public getPixel(x: number, time: number): Color{
+    return this.cachedVideo.getFrame(time).getColor(x);
+  }
+
   // Asynchronous method to get pixel data
-  async decodeGetPixel(x: number, y: number, timeInSeconds: number): Promise<Uint8ClampedArray | null> {
+  private async decodeGetPixel(
+    width: number,
+    timeInSeconds: number
+  ): Promise<Uint8ClampedArray | null> {
     if (!this.videoDataLoaded) {
       console.error("Video data not loaded. Call after video has loaded.");
       return null;
@@ -81,7 +121,7 @@ class VideoPixelReader {
     this.context.drawImage(this.videoElement, 0, 0);
 
     // Get pixel data at the specified coordinates
-    const imageData = this.context.getImageData(x, y, 1, 1);
+    const imageData = this.context.getImageData(0 - width / 2, this.videoElement.height/2, width, 1);
     return imageData.data;
   }
 }
