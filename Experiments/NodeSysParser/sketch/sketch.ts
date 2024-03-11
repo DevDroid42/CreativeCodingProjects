@@ -1,4 +1,4 @@
-let reader: VideoPixelReader;
+let video1, video2: VideoPixelReader;
 let setupDone = false;
 
 function benchmark(reader: VideoPixelReader){
@@ -18,13 +18,17 @@ function benchmark(reader: VideoPixelReader){
 }
 
 async function setup() {
-  // Example usage:
-  const videoUrl = "./assets/testEncoded.webm";
-  reader = new VideoPixelReader(videoUrl, 24, 256);
-  await reader.populateData();
+  video1 = new VideoPixelReader("./assets/melody.webm", 24, 256);
+  //video2 = new VideoPixelReader("./assets/MelodyEncoded - Copy.webm", 24, 256);
+  let t0 = performance.now();
+  await Promise.all(
+    [video1.populateData()
+      //, video2.populateData()
+    ]);
+  console.log(`Time to decode: ${performance.now() - t0}`);
   createCanvas(720, 400);
   stroke(255); // Set line drawing color to white
-  frameRate(30);
+  frameRate(60);
   setupDone = true;
 }
 
@@ -37,10 +41,10 @@ function draw(){
   background(0);
   stroke(0,0);
   time += deltaTime / 1000;
-  for (let i = 0; i < reader.resolution; i++) {
-    const pos = i / reader.resolution;
-    const col = reader.getPixel(pos, time % 4);
+  for (let i = 0; i < video1.resolution; i++) {
+    const pos = i / video1.resolution;
+    const col = video1.getPixel(pos, time % 4);
     fill(col.r, col.g, col.b);
-    square((i / reader.resolution) * width, height / 2, 2);  
+    rect((i / video1.resolution) * width, height, 2, -(col.r + col.g + col.b));  
   }
 }
