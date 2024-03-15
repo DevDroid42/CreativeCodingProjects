@@ -64,7 +64,9 @@ class VideoPixelReader {
         this.videoElement.crossOrigin = "anonymous";
         this.videoElement.preload = "auto";
         this.canvas = document.createElement("canvas");
-        this.context = this.canvas.getContext("2d");
+        this.canvas.width = resolution;
+        this.canvas.height = 10;
+        this.context = this.canvas.getContext("2d", { willReadFrequently: true });
         document.body.appendChild(this.canvas);
         this.videoDataLoaded = false;
         this.videoElement.addEventListener("loadeddata", () => {
@@ -78,7 +80,7 @@ class VideoPixelReader {
             yield new Promise((resolve) => {
                 this.videoElement.addEventListener("loadeddata", resolve, { once: true });
             });
-            const delta = 1 / this.frameRate;
+            const delta = 1 / 24;
             let frames = [];
             for (let time = 0; time < this.videoElement.duration; time += delta) {
                 let colors = [];
@@ -119,7 +121,7 @@ class VideoPixelReader {
         });
     }
 }
-let reader;
+let video1, video2;
 let setupDone = false;
 function benchmark(reader) {
     let seeks = 0;
@@ -136,12 +138,14 @@ function benchmark(reader) {
 }
 function setup() {
     return __awaiter(this, void 0, void 0, function* () {
-        const videoUrl = "./assets/testEncoded.webm";
-        reader = new VideoPixelReader(videoUrl, 24, 256);
-        yield reader.populateData();
+        video1 = new VideoPixelReader("./assets/melody.webm", 24, 256);
+        let t0 = performance.now();
+        yield Promise.all([video1.populateData()
+        ]);
+        console.log(`Time to decode: ${performance.now() - t0}`);
         createCanvas(720, 400);
         stroke(255);
-        frameRate(30);
+        frameRate(60);
         setupDone = true;
     });
 }
@@ -154,11 +158,11 @@ function draw() {
     background(0);
     stroke(0, 0);
     time += deltaTime / 1000;
-    for (let i = 0; i < reader.resolution; i++) {
-        const pos = i / reader.resolution;
-        const col = reader.getPixel(pos, time % 4);
+    for (let i = 0; i < video1.resolution; i++) {
+        const pos = i / video1.resolution;
+        const col = video1.getPixel(pos, time % 4);
         fill(col.r, col.g, col.b);
-        square((i / reader.resolution) * width, height / 2, 2);
+        rect((i / video1.resolution) * width, height, 2, -(col.r + col.g + col.b));
     }
 }
 //# sourceMappingURL=build.js.map

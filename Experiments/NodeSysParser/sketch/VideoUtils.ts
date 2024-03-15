@@ -56,8 +56,10 @@ class VideoPixelReader {
     this.videoElement.crossOrigin = "anonymous";
     this.videoElement.preload = "auto";
 
-    this.canvas = document.createElement("canvas");
-    this.context = this.canvas.getContext("2d");
+    this.canvas = document.createElement("canvas", );
+    this.canvas.width = resolution;
+    this.canvas.height = 10;
+    this.context = this.canvas.getContext("2d", {willReadFrequently: true});
     document.body.appendChild(this.canvas);
     this.videoDataLoaded = false;
 
@@ -74,7 +76,7 @@ class VideoPixelReader {
     await new Promise((resolve) => {
       this.videoElement.addEventListener("loadeddata", resolve, { once: true });
     });
-    const delta = 1 / this.frameRate;
+    const delta = 1 / 24;
     let frames: ColorTable[] = [];
     for (let time = 0; time < this.videoElement.duration; time += delta) {
       let colors: Color[] = []
