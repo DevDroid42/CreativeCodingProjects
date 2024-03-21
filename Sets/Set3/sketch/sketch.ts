@@ -1,16 +1,25 @@
 let txtBox;
 let colorPicker;
 let slider;
+let fontSelect;
+let fonts = {};
+let check;
 
 function setup() {
-  createP("Text To Render:");
+  createDiv("Text To Render:");
   txtBox = createInput("Edit Me");
-  createP("Text Color");
+  createDiv("Text Color");
   colorPicker = createColorPicker("red");
-  createP("Text Size");
+  createDiv("Text Size");
   slider = createSlider(0, 500, 100);
-  createCanvas(windowWidth, windowHeight * 0.8, WEBGL);
-  textFont(loadFont('Staatliches-Regular.ttf'));
+  createDiv("Font");
+  fontSelect = createSelect();
+  fontSelect.option("fancy");
+  fontSelect.option("regular");
+  fonts['fancy'] = loadFont('Staatliches-Regular.ttf');
+  fonts['regular'] = loadFont('arial.ttf');
+  check = createCheckbox("Is Thick", true);
+  createCanvas(windowWidth, windowHeight * 0.5, WEBGL);
 }
 
 function draw() {
@@ -19,7 +28,13 @@ function draw() {
   textAlign(CENTER, CENTER);
   let c = colorPicker.color();
   textSize(slider.value());
-  const res = 100;
+  textFont(fonts[fontSelect.value()]);
+  let res = 100;
+  if(check.checked()){
+    res = 100
+  }else{
+    res = 2;
+  }
   for (let i = 1; i < res; i++) {
     fill(
       map(i / res * c.levels[0], 0, res, 0, 255),
