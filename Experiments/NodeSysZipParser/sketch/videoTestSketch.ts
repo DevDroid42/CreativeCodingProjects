@@ -43,6 +43,8 @@ window["draw"] = function draw() {
     
     for (let i = 0; i < width; i++) {
         stroke(reader.tables['test'].getFrame(t).getColor(i / width).rgb().string());
-        square(i, height/2,1);
+        square(i, height/2 - 10,1);
+        stroke(reader.tables['test2'].getFrame(t).getColor(i / width).rgb().string());
+        square(i, height/2 + 10,1);
     }
 };
