@@ -36,12 +36,13 @@ window["draw"] = function draw() {
         loadingAnimation(reader.progress, reader.currentlyLoading);
         return;
     }
+    textAlign(CENTER, CENTER);
+    textSize(70);
     t += deltaTime / 1000;
-    //background(255,0,255);
-    textAlign(CENTER, CENTER)
-    textSize(70)
+    background(0);
+    
     for (let i = 0; i < width; i++) {
-        color(reader.tables['test'].getFrame(t).getColor(i / width).rgb().string())
-        rect(i,height/2,1,height);
+        stroke(reader.tables['test'].getFrame(t).getColor(i / width).rgb().string());
+        square(i, height/2,1);
     }
 };

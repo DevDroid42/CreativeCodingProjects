@@ -43,7 +43,7 @@ export class ZipPixelReader {
             let colors: Color[] = [];
             for (let position = 0; position < colorString.length - 6; position+=6) {
                 const color = colorString.substring(position, position + 6);
-                colors[position] = Color('#'+color);
+                colors[position / 6] = Color('#'+color);
             }
             if(lineNumber === 1 || (lineNumber % Math.floor(lines.length / 10)) === 0){
                 console.log(lineNumber);
