@@ -13,7 +13,7 @@ window["setup"] = async function setup() {
     await reader.parseBlobs();
 };
 
-function loadingAnimation(progress: number){
+function loadingAnimation(progress: number, message: string){
     background(255, 10);
     push()
     rectMode(CENTER);
@@ -26,17 +26,22 @@ function loadingAnimation(progress: number){
     textAlign(CENTER, CENTER)
     textSize(70)
     text("Loading", width / 2, height / 2);
+    textSize(40)
+    text(message, width / 2, height / 2 + 75);
 }
 
 window["draw"] = function draw() {
-    t += deltaTime / 1000;
     if(reader == null) return;
     if (!reader.finishedLoading) {
-        loadingAnimation(reader.progress);
+        loadingAnimation(reader.progress, reader.currentlyLoading);
         return;
     }
-    background(255,0,255);
+    t += deltaTime / 1000;
+    //background(255,0,255);
     textAlign(CENTER, CENTER)
     textSize(70)
-    text("Finished Loading", width / 2, height / 2);
+    for (let i = 0; i < width; i++) {
+        color(reader.tables['test'].getFrame(t).getColor(i / width).rgb().string())
+        rect(i,height/2,1,height);
+    }
 };
