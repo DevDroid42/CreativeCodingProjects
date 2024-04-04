@@ -1,6 +1,4 @@
-export class Color {
-  public constructor(public r: number, public g: number, public b: number) {}
-}
+import Color from 'color'
 
 export class ColorTable {
   public constructor(public colors: Color[], public time: number) {}

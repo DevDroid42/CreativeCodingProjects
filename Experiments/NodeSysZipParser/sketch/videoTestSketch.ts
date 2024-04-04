@@ -1,10 +1,16 @@
-//import { VideoPixelReader } from "./VideoUtils";
+import { ZipPixelReader } from "./zipPixelReader";
 
 let t  = 0;
+let reader: ZipPixelReader;
 
 window["setup"] = async function setup() {
-    console.log("Setup Running");
     createCanvas(windowWidth, windowHeight);
+    const videoRequest = new Request('video.zip');
+    let response = await fetch(videoRequest);
+    let b = await response.blob();
+    reader = new ZipPixelReader([b]);
+    window['reader'] = reader;
+    await reader.parseBlobs();
 };
 
 function loadingAnimation(progress: number){
@@ -24,8 +30,9 @@ function loadingAnimation(progress: number){
 
 window["draw"] = function draw() {
     t += deltaTime / 1000;
-    if (t < 5) {
-        loadingAnimation(t / 5);
+    if(reader == null) return;
+    if (!reader.finishedLoading) {
+        loadingAnimation(reader.progress);
         return;
     }
     background(255,0,255);
