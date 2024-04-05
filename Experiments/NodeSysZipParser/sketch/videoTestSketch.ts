@@ -11,6 +11,7 @@ window["setup"] = async function setup() {
     reader = new ZipPixelReader([b]);
     window['reader'] = reader;
     await reader.parseBlobs();
+    reader.tables['test'].registerBeatDetection(() => {console.log("beat detected")})
 };
 
 function loadingAnimation(progress: number, message: string){
@@ -39,6 +40,10 @@ window["draw"] = function draw() {
     textAlign(CENTER, CENTER);
     textSize(70);
     t += deltaTime / 1000;
+    if(t > 4){
+        t = 0;
+    }
+    reader.tables['test'].beatDetectionFrame(0.5, t, 0.85);
     background(0);
     
     for (let i = 0; i < width; i++) {
