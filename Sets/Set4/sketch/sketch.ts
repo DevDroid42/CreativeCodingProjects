@@ -35,14 +35,14 @@ class Ball {
   public tick(delta: number) {
     if (ball.position.x > windowWidth - ball.diameter / 2 || ball.position.x < ball.diameter / 2) {
       ball.position.x = clamp(ball.position.x, ball.diameter / 2, windowWidth - ball.diameter / 2);
-      sound.setVolume(ball.speed.dist(createVector(0,0)) / (width + height));
+      sound.setVolume(ball.speed.dist(createVector(0, 0)) / (width + height));
       ball.speed.x *= -0.5;
       sound.play();
     }
 
     if (ball.position.y > (windowHeight) - ball.diameter / 2 || ball.position.y - ball.diameter / 2 < 0) {
       ball.position.y = clamp(ball.position.y, ball.diameter / 2, windowHeight - ball.diameter / 2);
-      sound.setVolume(ball.speed.dist(createVector(0,0)) / (width + height));
+      sound.setVolume(ball.speed.dist(createVector(0, 0)) / (width + height));
       ball.speed.y *= -0.5;
       sound.play();
     }
@@ -57,7 +57,7 @@ class Ball {
 
 let sound;
 let music;
-function preload(){
+function preload() {
   sound = loadSound('assets/c.wav');
   music = loadSound('assets/myMusic.ogg');
   music.setLoop(true);
@@ -94,13 +94,13 @@ function windowResized() {
 }
 
 let sus = false;
-function mouseClicked(){
+function mouseClicked() {
   music.play();
   console.log('clicked');
   sus = !sus;
-  if(sus){
+  if (sus) {
     sound.playMode('sustain');
-  }else{
+  } else {
     sound.playMode('restart');
   }
 }
