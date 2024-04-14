@@ -1,7 +1,10 @@
+let t = 0;
+let notes = 0;
 let started = false;
 let initalized = false;
 class Ball {
     constructor(freq, radius, position, speed, renderSize) {
+        this.brightness = 0;
         let voices = 6;
         let range = 2.5;
         this.oscillators = [];
@@ -13,26 +16,37 @@ class Ball {
             this.oscillators.push(osc);
         }
         this.env = new p5.Envelope();
-        this.env.setADSR(0.0001, 0, 1, 0.1);
-        this.env.setRange(0.8, 0);
+        this.env.setADSR(0.01, 0, 1, 0.2);
+        this.env.setRange(1, 0);
         this.radius = radius;
         this.position = position;
         this.speed = speed;
         this.renderSize = renderSize;
     }
+    setFreq(freq) {
+        this.oscillators.forEach(element => {
+            element.freq(freq);
+        });
+    }
     tick(deltaTime) {
-        let brightness = 128;
         this.position += deltaTime * this.speed;
         if (cos(this.position) > 0 && cos(this.prevPos) < 0) {
             this.oscillators.forEach(osc => {
-                this.env.play(osc, 0, 1);
+                this.env.play(osc, 0, 0.2);
+                notes += 1;
             });
-            brightness = 255;
+            this.brightness = 255;
             console.log("play");
         }
         this.prevPos = this.position;
         push();
-        fill(brightness);
+        if (this.brightness < 100) {
+            fill(100);
+        }
+        else {
+            fill(this.brightness);
+        }
+        this.brightness = this.brightness - (this.brightness * 3 * deltaTime);
         let x = cos(this.position) * this.radius + width / 2;
         let y = sin(this.position) * this.radius + height / 2;
         circle(x, y, this.renderSize);
@@ -42,19 +56,25 @@ class Ball {
 let balls;
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    frameRate(30);
+    frameRate(120);
 }
+const chords = [
+    [16.35, 19.45, 24.5],
+    [16.35, 19.45, 25.96],
+    [19.45, 24.5, 29.14],
+    [18.35, 21.83, 29.14]
+];
+let scaleArray;
 function initializeStuff() {
-    let scaleArray = [16.35, 18.35, 19.45, 21.83, 24.5, 25.96, 29.14];
     initalized = true;
     balls = [];
-    let size = 7;
+    let size = 32;
     for (let i = 0; i < size; i++) {
-        balls[i] = new Ball(scaleArray[i % scaleArray.length] * Math.pow(2, 3), (height / (size * 2.5)) * i + 10, PI, ((i / size * (1 / (0.5 * size))) * PI + PI) * 0.5, height / size / 4);
+        balls[i] = new Ball(scaleArray[i % scaleArray.length] * Math.pow(2, 1 + Math.floor(i / scaleArray.length)), (height / (size * 2.5)) * i + 0, PI + (PI / 2 - 0.1) + (i % 2 == 0 ? PI : 0), 1 + 10 * (i / size), height / size / 4);
     }
 }
 function draw() {
-    background(0);
+    background(0, 20);
     if (!started) {
         textAlign(CENTER);
         textSize(40);
@@ -62,12 +82,16 @@ function draw() {
         text("Click To Start", width / 2, height / 2);
         return;
     }
+    t += deltaTime / 1000;
+    scaleArray = chords[Math.floor(notes / 160) % chords.length];
     if (!initalized) {
         initializeStuff();
     }
-    balls.forEach((ball) => {
-        ball.tick(deltaTime / 1000);
-    });
+    for (let i = 0; i < balls.length; i++) {
+        const b = balls[i];
+        b.setFreq(scaleArray[i / 2 % scaleArray.length] * Math.pow(2, 1 + Math.floor(i / 2 / scaleArray.length)));
+        b.tick(deltaTime / 1000);
+    }
 }
 function mouseClicked() {
     started = true;
