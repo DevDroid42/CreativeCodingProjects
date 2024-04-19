@@ -45,7 +45,7 @@ export class ZipPixelReader {
                 const color = colorString.substring(position, position + 6);
                 colors[position / 6] = Color('#'+color);
             }
-            if(lineNumber === 1 || (lineNumber % Math.floor(lines.length / 10)) === 0){
+            if(lineNumber === 1 || (lineNumber % Math.floor(lines.length / 2)) === 0){
                 console.log(lineNumber);
                 await new Promise((resolve) => setTimeout(resolve));
             }
