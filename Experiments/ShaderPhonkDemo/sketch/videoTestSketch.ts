@@ -1,5 +1,6 @@
-import { Graphics, Shader, SoundFile, TEXTURE } from "p5";
+import { Color, Graphics, Shader, SoundFile, TEXTURE } from "p5";
 import { ZipPixelReader } from "./zipPixelReader";
+import { hsv } from "color";
 
 let animationProgress = 0;
 let t = 0;
@@ -21,6 +22,7 @@ window["setup"] = async function setup() {
     cam = createCapture('video');
     cam.size(710, 400);
     cam.hide();
+    colorMode(HSB);
     const videoRequest = new Request('video.zip');
     let response = await fetch(videoRequest);
     let b = await response.blob();
@@ -28,7 +30,9 @@ window["setup"] = async function setup() {
     window['reader'] = reader;
     await reader.parseBlobs();
     //reader.tables['Riser_Kick'].registerBeatDetection(() => { console.log("beat detected") })
-    melodyGraphics = createGraphics(256, 1);
+    melodyGraphics = createGraphics(710, 400);
+    melodyGraphics.noStroke();
+    melodyGraphics.colorMode(HSB);
 };
 
 function loadingAnimation(progress: number, message: string) {
@@ -59,7 +63,7 @@ let hasClicked = false;
 function FinalSetup() {
     push();
     clickReady = true;
-    if(alreadySetup) return true;
+    if (alreadySetup) return true;
     if (hasClicked) {
         noStroke();
         noFill();
@@ -107,19 +111,24 @@ window["draw"] = function draw() {
 
     tickTime();
     orbitControl();
+    melodyGraphics.image(cam, 0, 0);
+    melodyGraphics.background(0, 0.2);
+    melodyGraphics.background(255,
+        reader.tables['Riser_Kick'].getFrame(audioTime).getColor(0.5).lightness() +
+        reader.tables['SnareTrig'].getFrame(audioTime).getColor(0.5).lightness());
     for (let i = 0; i < 256; i++) {
-        melodyGraphics.background(reader.tables['Riser_Kick'].getFrame(audioTime).getColor(0.5).rgb().string());
-        melodyGraphics.stroke(reader.tables['Melody'].getFrame(audioTime).getColor(i / 256).rgb().string());
-        melodyGraphics.fill(reader.tables['Melody'].getFrame(audioTime).getColor(i / 256).rgb().string());
-        melodyGraphics.point(i, 0);
+        melodyGraphics.fill(t, 255, reader.tables['Melody'].getFrame(audioTime).getColor(i / 256).lightness() * 2);
+        for (let j = 1; j < 6; j++) {
+            melodyGraphics.square(melodyGraphics.width / 256 * i, melodyGraphics.height / 6 * j, melodyGraphics.width / 256 + 1);   
+        }
     }
 
     //ambientLight(255);
     renderShaders();
     //reader.tables['Riser_Kick'].beatDetectionFrame(0.5, t, 0.85);
 
-    
-    
+
+
     /*
     for (let i = 0; i < 256; i++) {
         fill(reader.tables['Beat_Waves'].getFrame(audioTime).getColor(i / 256).rgb().string());
@@ -140,5 +149,5 @@ window["draw"] = function draw() {
         square(width / 256 * i, height / 2 + 20, width / 256 + 1);
     }
     */
-    
+
 };

@@ -44,12 +44,12 @@ void main() {
     transformedUV.x = transformedUV.x - floor(transformedUV.x);
     transformedUV.y = transformedUV.y - floor(transformedUV.y);
     // Color
-    vec4 color = texture2D(tex0, model_uv);
+    vec4 color = texture2D(tex0, transformedUV);
     
     for(int i = 0; i < 3; i++){
         color[i] *= (sin(float(modI(float(int(currentSegment) + i), 3.0)) / 3.1415926538) + 1.0) / 2.0;
-        color[i] = pow(color[i], 1.5);
-        color[i] *= 3.0;
+        color[i] = pow(color[i], 2.0);
+        color[i] *= float(2.0 * float(i + 1));
     }
     gl_FragColor = color;
 }
