@@ -1,11 +1,21 @@
-import { Color, Graphics, Shader, SoundFile, TEXTURE } from "p5";
+import { FFT, Graphics, Shader, SoundFile, TEXTURE } from "p5";
 import { ZipPixelReader } from "./zipPixelReader";
-import { hsv } from "color";
+import { Pane } from "tweakpane";
+
+
+const PARAMS = {
+    webcamBrightness: 0.7,
+};
+
+const pane = new Pane();
+pane.addBinding(PARAMS, 'webcamBrightness',  {min: 0, max: 1, step: 0.01});
+
 
 let animationProgress = 0;
 let t = 0;
 let audioTime = 0;
 let audio: SoundFile;
+let fft: FFT;
 let reader: ZipPixelReader;
 
 let cam;
@@ -33,6 +43,9 @@ window["setup"] = async function setup() {
     melodyGraphics = createGraphics(710, 400);
     melodyGraphics.noStroke();
     melodyGraphics.colorMode(HSB);
+    fft = new p5.FFT();
+    fft.setInput(audio);
+    fft.smooth(0);
 };
 
 function loadingAnimation(progress: number, message: string) {
@@ -50,7 +63,10 @@ function loadingAnimation(progress: number, message: string) {
 
 function tickTime() {
     t += deltaTime / 1000;
-    animationProgress += deltaTime;
+    fft.analyze();
+    animationProgress += deltaTime + (Math.pow(fft.getEnergy(2000, 20000) / 255, 2) * 100)
+        + reader.tables['Riser_Kick'].getFrame(audioTime).getColor(0.5).lightness()
+        + reader.tables['KickTrig'].getFrame(audioTime).getColor(0.5).lightness();
     if (t > 4) {
         t = 0;
     }
@@ -108,18 +124,32 @@ window["draw"] = function draw() {
     background(0);
     if (!FinalSetup()) return;
 
-
     tickTime();
     orbitControl();
     melodyGraphics.image(cam, 0, 0);
-    melodyGraphics.background(0, 0.2);
+    melodyGraphics.background(0, 1-PARAMS.webcamBrightness);
     melodyGraphics.background(255,
         reader.tables['Riser_Kick'].getFrame(audioTime).getColor(0.5).lightness() +
-        reader.tables['SnareTrig'].getFrame(audioTime).getColor(0.5).lightness());
+        reader.tables['SnareTrig'].getFrame(audioTime).getColor(0.5).lightness() +
+        reader.tables['VibeVolume'].getFrame(audioTime).getColor(0.5).lightness() / 100);
     for (let i = 0; i < 256; i++) {
-        melodyGraphics.fill(t, 255, reader.tables['Melody'].getFrame(audioTime).getColor(i / 256).lightness() * 2);
+        melodyGraphics.fill(animationProgress / 100 + 128, 255, reader.tables['Melody'].getFrame(audioTime).getColor(i / 256).lightness() * 2);
         for (let j = 1; j < 6; j++) {
-            melodyGraphics.square(melodyGraphics.width / 256 * i, melodyGraphics.height / 6 * j, melodyGraphics.width / 256 + 1);   
+            melodyGraphics.square(melodyGraphics.width / 256 * i, melodyGraphics.height / 6 * j, melodyGraphics.width / 256 + 1);
+        }
+        melodyGraphics.push()
+        colorMode("rgb")
+        let c = reader.tables['HatWaves'].getFrame(audioTime).getColor(i / 256);
+        c.saturate(1);
+        let colors = c.rgb().array();
+        melodyGraphics.fill(colors[0], colors[1], colors[2], c.lightness());
+        for (let j = 1; j < 6; j++) {
+            melodyGraphics.square(melodyGraphics.width / 6 * j, melodyGraphics.height / 256 * i, melodyGraphics.width / 256 + 1);
+        }
+        melodyGraphics.pop()
+        melodyGraphics.fill(animationProgress / 100, 255, 255, reader.tables['Beat_Waves'].getFrame(audioTime).getColor(i / 256).lightness() / 255);
+        for (let j = 1; j < 6; j++) {
+            melodyGraphics.rect(melodyGraphics.width / 256 * i, 0, melodyGraphics.width / 256 + 1, 1000);
         }
     }
 
