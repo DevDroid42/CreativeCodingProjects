@@ -147,10 +147,9 @@ window["draw"] = function draw() {
             melodyGraphics.square(melodyGraphics.width / 6 * j, melodyGraphics.height / 256 * i, melodyGraphics.width / 256 + 1);
         }
         melodyGraphics.pop()
-        melodyGraphics.fill(animationProgress / 100, 255, 255, reader.tables['Beat_Waves'].getFrame(audioTime).getColor(i / 256).lightness() / 255);
-        for (let j = 1; j < 6; j++) {
-            melodyGraphics.rect(melodyGraphics.width / 256 * i, 0, melodyGraphics.width / 256 + 1, 1000);
-        }
+        melodyGraphics.fill(animationProgress / 100, 255, 255, reader.tables['Beat_Waves'].getFrame(audioTime).getColor(i / 256).lightness() * 5 / 255);
+        melodyGraphics.rect(melodyGraphics.width / 256 * i, 0, melodyGraphics.width / 256 + 1, 1000);
+        
     }
 
     //ambientLight(255);
